@@ -98,11 +98,57 @@ SQL;
     echo '<script>' . $script . '</script>';
   }
 
+  public function get_tax_id_number() {
+
+    global $wpdb;
+
+    $tax_id_number = '';
+
+    if ( is_user_logged_in() ) {
+
+      $user = wp_get_current_user();
+
+      $user_id = $user->ID;
+
+      $meta_field = esc_sql($this->id_meta_field);
+
+      $sql = <<<SQL
+SELECT
+  {$wpdb->prefix}postmeta.meta_value,
+  {$wpdb->prefix}posts.post_date
+FROM {$wpdb->prefix}posts
+JOIN {$wpdb->prefix}postmeta
+  ON {$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id
+WHERE
+  {$wpdb->prefix}posts.post_author = $user->ID
+  AND {$wpdb->prefix}postmeta.meta_key = "$meta_field"
+  AND {$wpdb->prefix}postmeta.meta_value != ""
+  AND {$wpdb->prefix}postmeta.meta_value IS NOT NULL
+ORDER BY {$wpdb->prefix}posts.post_date
+LIMIT 1
+SQL;
+
+      $row = $wpdb->get_row($sql);
+
+      if ( $row = $wpdb->get_row($sql) ) {
+      
+        $tax_id_number = $row->meta_value;
+      }
+
+      return $tax_id_number;
+    }
+  }
+
   public function checkout_content( $checkout ) {
 
     $id_field_name = $this->id_field;
 
     $tax_exempt_id = $checkout->get_value( $id_field_name );
+
+    if ( empty($tax_exempt_id ) ) {
+
+      $tax_exempt_id = $this->get_tax_id_number();
+    }
 
     $location_data = $this->get_tax_locations();
 
