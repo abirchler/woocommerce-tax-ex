@@ -124,7 +124,7 @@ WHERE
   AND {$wpdb->prefix}postmeta.meta_key = "$meta_field"
   AND {$wpdb->prefix}postmeta.meta_value != ""
   AND {$wpdb->prefix}postmeta.meta_value IS NOT NULL
-ORDER BY {$wpdb->prefix}posts.post_date
+ORDER BY {$wpdb->prefix}posts.post_date DESC
 LIMIT 1
 SQL;
 
